@@ -27,8 +27,7 @@ class SqlProtectionCommand extends Command
             
             // Check if the SQL injection protection middleware is applied
             if (in_array(SqlQueryProtection::class, (array) $middleware)) {
-                // You can implement more specific logic to check for vulnerabilities
-                // For example, you can check the controller actions or route parameters
+            
                 
                 $this->info('Checking route: ' . $route->uri);
                 // Add your logic to analyze route parameters or request handling
