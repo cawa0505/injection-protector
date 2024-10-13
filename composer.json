@@ -1,5 +1,5 @@
 {
-    "name": "your-vendor/sql-query-protection",
+    "name": "protect/sql-query-protection",
     "description": "A Laravel middleware for SQL and XSS protection",
     "type": "library",
     "license": "MIT",

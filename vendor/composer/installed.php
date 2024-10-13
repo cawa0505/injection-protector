@@ -1,6 +1,6 @@
 <?php return array(
     'root' => array(
-        'name' => 'your-vendor/sql-query-protection',
+        'name' => 'protect/sql-query-protection',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
         'reference' => '3850034d28865b3e1286a0a5e456d6ffc5d1f00a',
@@ -409,7 +409,7 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
-        'your-vendor/sql-query-protection' => array(
+        'protect/sql-query-protection' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
             'reference' => '3850034d28865b3e1286a0a5e456d6ffc5d1f00a',
