@@ -9,6 +9,7 @@ class SqlQueryProtectionTest extends TestCase
 {
     protected $middleware;
 
+    
     protected function setUp(): void
     {
         parent::setUp();
