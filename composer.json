@@ -20,16 +20,16 @@
     },
     "autoload-dev": {
         "psr-4": {
-          "SqlQueryProtection\\Tests\\": "tests/"
+          "Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "SqlQueryProtection\\SqlQueryProtectionServiceProvider"
+                "SqlQueryProtectionServiceProvider"
             ],
             "aliases": {
-                "SqlQueryProtection": "SqlQueryProtection\\Facades\\SqlQueryProtectionFacade"
+                "SqlQueryProtection": "Facades\\SqlQueryProtectionFacade"
             }
         }
     },

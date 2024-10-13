@@ -22,13 +22,16 @@ class ComposerStaticInit09aaae7bd1726da742a3b71f2f59dd7a
         array (
             'voku\\' => 5,
         ),
+        'T' => 
+        array (
+            'Tests\\' => 6,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Contracts\\Translation\\' => 30,
             'Symfony\\Component\\Translation\\' => 30,
-            'SqlQueryProtection\\Tests\\' => 25,
             'SqlQueryProtection\\' => 19,
         ),
         'P' => 
@@ -60,6 +63,10 @@ class ComposerStaticInit09aaae7bd1726da742a3b71f2f59dd7a
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
         ),
+        'Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
@@ -75,10 +82,6 @@ class ComposerStaticInit09aaae7bd1726da742a3b71f2f59dd7a
         'Symfony\\Component\\Translation\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/translation',
-        ),
-        'SqlQueryProtection\\Tests\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/tests',
         ),
         'SqlQueryProtection\\' => 
         array (
