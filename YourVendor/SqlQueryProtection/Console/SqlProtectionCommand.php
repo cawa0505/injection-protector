@@ -9,6 +9,7 @@ use YourVendor\SqlQueryProtection\Middleware\SqlQueryProtection;
 class SqlProtectionCommand extends Command
 {
     protected $signature = 'sqlprotection:scan';
+    
     protected $description = 'Scan for SQL injection vulnerabilities';
 
     public function handle()
