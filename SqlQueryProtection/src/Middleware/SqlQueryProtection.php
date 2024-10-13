@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection\Middleware;
+namespace SqlQueryProtection\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

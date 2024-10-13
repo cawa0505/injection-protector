@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection\Facades;
+namespace SqlQueryProtection\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

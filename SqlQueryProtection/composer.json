@@ -15,21 +15,21 @@
     },
     "autoload": {
         "psr-4": {
-            "YourVendor\\SqlQueryProtection\\": "src/"
+            "SqlQueryProtection\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-          "YourVendor\\SqlQueryProtection\\Tests\\": "tests/"
+          "SqlQueryProtection\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "YourVendor\\SqlQueryProtection\\SqlQueryProtectionServiceProvider"
+                "SqlQueryProtection\\SqlQueryProtectionServiceProvider"
             ],
             "aliases": {
-                "SqlQueryProtection": "YourVendor\\SqlQueryProtection\\Facades\\SqlQueryProtectionFacade"
+                "SqlQueryProtection": "SqlQueryProtection\\Facades\\SqlQueryProtectionFacade"
             }
         }
     },

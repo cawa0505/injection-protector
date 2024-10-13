@@ -1,9 +1,9 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection\Tests;
+namespace SqlQueryProtection\Tests;
 
 use Illuminate\Http\Request;
-use YourVendor\SqlQueryProtection\Middleware\SqlQueryProtection;
+use SqlQueryProtection\Middleware\SqlQueryProtection;
 
 class SqlQueryProtectionTest extends TestCase
 {

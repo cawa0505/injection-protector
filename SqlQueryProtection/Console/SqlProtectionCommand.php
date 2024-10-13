@@ -1,10 +1,10 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection\Console;
+namespace SqlQueryProtection\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
-use YourVendor\SqlQueryProtection\Middleware\SqlQueryProtection;
+use SqlQueryProtection\Middleware\SqlQueryProtection;
 
 class SqlProtectionCommand extends Command
 {

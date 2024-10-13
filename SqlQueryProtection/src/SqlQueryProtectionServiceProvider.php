@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection;
+namespace SqlQueryProtection;
 
 use Illuminate\Support\ServiceProvider;
 

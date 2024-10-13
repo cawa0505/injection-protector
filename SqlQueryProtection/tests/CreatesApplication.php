@@ -1,6 +1,6 @@
 <?php
 
-namespace YourVendor\SqlQueryProtection\Tests;
+namespace SqlQueryProtection\Tests;
 
 use Illuminate\Contracts\Console\Kernel;
 
