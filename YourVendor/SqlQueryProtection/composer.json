@@ -1,0 +1,41 @@
+{
+    "name": "your-vendor/sql-query-protection",
+    "description": "A Laravel middleware for SQL and XSS protection",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aswin Sasi",
+            "email": "aswinfear01@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "illuminate/support": "^8.0 || ^9.0 || ^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "YourVendor\\SqlQueryProtection\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+          "YourVendor\\SqlQueryProtection\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "YourVendor\\SqlQueryProtection\\SqlQueryProtectionServiceProvider"
+            ],
+            "aliases": {
+                "SqlQueryProtection": "YourVendor\\SqlQueryProtection\\Facades\\SqlQueryProtectionFacade"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^11.4"
+    }
+}
