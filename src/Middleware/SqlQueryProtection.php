@@ -22,6 +22,9 @@ class SqlQueryProtection
      */
     public function handle(Request $request, Closure $next): Response
     {
+
+        $config = config('sqlqueryprotection'); // Access the config file.
+
         // Check if New Relic is available
         $useNewRelic = extension_loaded('newrelic');
 
@@ -84,160 +87,27 @@ class SqlQueryProtection
             '/SL_L_23361dd035530_SID=({.*?})/',
         ];
 
-        // Function to check values against SQL injection patterns
-        $checkForSqlInjection = function ($key, $value, $type = 'input', $skipPatterns = []) use ($sqlPatterns, $request, $logWarning) {
-            foreach ($sqlPatterns as $pattern) {
-                // Skip specific patterns if requested
-                $skip = false;
-                foreach ($skipPatterns as $skipPattern) {
-                    if (preg_match($skipPattern, $value)) {
-                        $skip = true;
-                        break;
+
+        if ($config['sql_protection_enabled']) {
+            // Function to check values against SQL injection patterns
+            $checkForSqlInjection = function ($key, $value, $type = 'input', $skipPatterns = []) use ($sqlPatterns, $request, $logWarning) {
+                foreach ($sqlPatterns as $pattern) {
+                    // Skip specific patterns if requested
+                    $skip = false;
+                    foreach ($skipPatterns as $skipPattern) {
+                        if (preg_match($skipPattern, $value)) {
+                            $skip = true;
+                            break;
+                        }
                     }
-                }
 
-                if ($skip) {
-                    continue;
-                }
-
-                if (preg_match($pattern, $value)) {
-                    $logWarning('Potential SQL injection attempt detected', [
-                        'type' => $type,
-                        'key' => $key,
-                        'value' => $value,
-                        'ip' => $request->ip(),
-                        'url' => $request->fullUrl(),
-                    ]);
-
-                    return response()->json(['error' => 'Suspicious activity detected'], 400);
-                }
-            }
-
-            return null;
-        };
-
-        // Function to check values against XSS patterns
-        $checkForXssInjection = function ($key, $value, $type = 'input') use ($xssPatterns, $request, $logWarning) {
-            foreach ($xssPatterns as $pattern) {
-                if (preg_match($pattern, $value)) {
-                    $logWarning('Potential XSS attempt detected', [
-                        'type' => $type,
-                        'key' => $key,
-                        'value' => $value,
-                        'ip' => $request->ip(),
-                        'url' => $request->fullUrl(),
-                    ]);
-
-                    return response()->json(['error' => 'Suspicious activity detected'], 400);
-                }
-            }
-
-            return null;
-        };
-
-        // Function to check the URL for LDAP injection
-        $checkUrlForLdapInjection = function ($url) use ($ldapPatterns, $request, $logWarning) {
-            foreach ($ldapPatterns as $pattern) {
-                if (preg_match($pattern, $url)) {
-                    $logWarning('Potential LDAP injection attempt detected in URL', [
-                        'type' => 'url',
-                        'value' => $url,
-                        'ip' => $request->ip(),
-                        'url' => $request->fullUrl(),
-                    ]);
-
-                    return response()->json(['error' => 'Suspicious activity detected'], 400);
-                }
-            }
-
-            return null;
-        };
-
-        // Specifically check for attack types in the X-RTC-ATTACKTYPE header
-        $attackTypeHeader = $request->header('X-RTC-ATTACKTYPE');
-        if ($attackTypeHeader) {
-            if (in_array(strtolower($attackTypeHeader), ['sqlinjection'])) {
-                $logWarning('Potential SQL injection attempt detected via X-RTC-ATTACKTYPE header', [
-                    'type' => 'header',
-                    'key' => 'X-RTC-ATTACKTYPE',
-                    'value' => $attackTypeHeader,
-                    'ip' => $request->ip(),
-                    'url' => $request->fullUrl(),
-                ]);
-
-                return response()->json(['error' => 'Suspicious activity detected'], 400);
-            } elseif (in_array(strtolower($attackTypeHeader), ['ldapinjection'])) {
-                $logWarning('Potential LDAP injection attempt detected via X-RTC-ATTACKTYPE header', [
-                    'type' => 'header',
-                    'key' => 'X-RTC-ATTACKTYPE',
-                    'value' => $attackTypeHeader,
-                    'ip' => $request->ip(),
-                    'url' => $request->fullUrl(),
-                ]);
-
-                return response()->json(['error' => 'Suspicious activity detected'], 400);
-            }
-        }
-
-        // Check the full URL for SQL injection
-        $decodedUrl = urldecode($request->fullUrl());
-        $response = $checkForSqlInjection('url', $decodedUrl, 'url', [
-            '/\b(SELECT|UPDATE|SHOW|DELETE)\b/i',
-        ]);
-        if ($response) {
-            return $response;
-        }
-
-        // Check the full URL for LDAP injection
-        $response = $checkUrlForLdapInjection($decodedUrl);
-        if ($response) {
-            return $response;
-        }
-
-        // Check request inputs for SQL and XSS injection
-        // foreach ($request->all() as $key => $value) {
-        //     if (is_string($value)) {
-        //         $response = $checkForSqlInjection($key, $value, 'input');
-        //         if ($response) {
-        //             return $response;
-        //         }
-        //         $response = $checkForXssInjection($key, $value, 'input');
-        //         if ($response) {
-        //             return $response;
-        //         }
-        //     }
-        // }
-        // Check request headers for SQL and XSS injection
-        foreach ($request->headers->all() as $key => $values) {
-            foreach ($values as $value) {
-                // Call the function to extract and clean the cookie value
-                $value = $this->extractAndCleanCookieValue($value, $excludedCookiePattern);
-
-                if (is_string($value)) {
-                    $response = $checkForSqlInjection($key, $value, 'header');
-                    if ($response) {
-                        return $response;
+                    if ($skip) {
+                        continue;
                     }
-                    $response = $checkForXssInjection($key, $value, 'header');
-                    if ($response) {
-                        return $response;
-                    }
-                }
-            }
-        }
 
-        // Function to check headers for SQL injection, XSS, and special characters if header key is 'cookie'
-        foreach ($request->headers->all() as $key => $values) {
-            foreach ($values as $value) {
-
-                // Call the function to extract and clean the cookie value
-                $value = $this->extractAndCleanCookieValue($value, $excludedCookiePattern);
-
-                if (is_string($value)) {
-                    // Check for special characters in 'cookie' headers
-                    if (stripos($key, 'cookie') !== false && preg_match($this->specialCharPatternCookie, $value)) {
-                        $logWarning('Potential harmful characters detected in header with cookie key', [
-                            'type' => 'header',
+                    if (preg_match($pattern, $value)) {
+                        $logWarning('Potential SQL injection attempt detected', [
+                            'type' => $type,
                             'key' => $key,
                             'value' => $value,
                             'ip' => $request->ip(),
@@ -246,11 +116,17 @@ class SqlQueryProtection
 
                         return response()->json(['error' => 'Suspicious activity detected'], 400);
                     }
+                }
 
-                    // Check for special characters in 'x-xsrf-token' headers
-                    if (stripos($key, 'x-xsrf-token') !== false && preg_match($this->specialCharPattern, $value)) {
-                        $logWarning('Potential harmful characters detected in x-xsrf-token header', [
-                            'type' => 'header',
+                return null;
+            };
+
+            // Function to check values against XSS patterns
+            $checkForXssInjection = function ($key, $value, $type = 'input') use ($xssPatterns, $request, $logWarning) {
+                foreach ($xssPatterns as $pattern) {
+                    if (preg_match($pattern, $value)) {
+                        $logWarning('Potential XSS attempt detected', [
+                            'type' => $type,
                             'key' => $key,
                             'value' => $value,
                             'ip' => $request->ip(),
@@ -259,65 +135,123 @@ class SqlQueryProtection
 
                         return response()->json(['error' => 'Suspicious activity detected'], 400);
                     }
-
-                    // Check for SQL injection patterns in headers
-                    $response = $checkForSqlInjection($key, $value, 'header');
-                    if ($response) {
-                        return $response;
-                    }
-
-                    // Check for XSS injection patterns in headers
-                    $response = $checkForXssInjection($key, $value, 'header');
-                    if ($response) {
-                        return $response;
-                    }
                 }
-            }
+
+                return null;
+            };
         }
 
-        // Check cookies for dynamic session keys
-        foreach ($request->cookies as $cookieName => $cookieValue) {
-            if (is_string($cookieValue)) {
-                // Avoid special characters in cookies
-                if (preg_match($this->specialCharPattern, $cookieValue)) {
-                    $logWarning('Potential harmful characters detected in cookie', [
-                        'type' => 'cookie',
-                        'key' => $cookieName,
-                        'value' => $cookieValue,
+
+        if ($config['xss_protection_enabled']) {
+            // Function to check the URL for LDAP injection
+            $checkUrlForLdapInjection = function ($url) use ($ldapPatterns, $request, $logWarning) {
+                foreach ($ldapPatterns as $pattern) {
+                    if (preg_match($pattern, $url)) {
+                        $logWarning('Potential LDAP injection attempt detected in URL', [
+                            'type' => 'url',
+                            'value' => $url,
+                            'ip' => $request->ip(),
+                            'url' => $request->fullUrl(),
+                        ]);
+
+                        return response()->json(['error' => 'Suspicious activity detected'], 400);
+                    }
+                }
+
+                return null;
+            };
+        }
+
+
+        if ($config['sql_protection_enabled']) {
+
+            // Specifically check for attack types in the X-RTC-ATTACKTYPE header
+            $attackTypeHeader = $request->header('X-RTC-ATTACKTYPE');
+            if ($attackTypeHeader) {
+                if (in_array(strtolower($attackTypeHeader), ['sqlinjection'])) {
+                    $logWarning('Potential SQL injection attempt detected via X-RTC-ATTACKTYPE header', [
+                        'type' => 'header',
+                        'key' => 'X-RTC-ATTACKTYPE',
+                        'value' => $attackTypeHeader,
+                        'ip' => $request->ip(),
+                        'url' => $request->fullUrl(),
+                    ]);
+
+                    return response()->json(['error' => 'Suspicious activity detected'], 400);
+                } elseif (in_array(strtolower($attackTypeHeader), ['ldapinjection'])) {
+                    $logWarning('Potential LDAP injection attempt detected via X-RTC-ATTACKTYPE header', [
+                        'type' => 'header',
+                        'key' => 'X-RTC-ATTACKTYPE',
+                        'value' => $attackTypeHeader,
                         'ip' => $request->ip(),
                         'url' => $request->fullUrl(),
                     ]);
 
                     return response()->json(['error' => 'Suspicious activity detected'], 400);
                 }
+            }
 
-                $response = $checkForSqlInjection($cookieName, $cookieValue, 'cookie');
-                if ($response) {
-                    return $response;
-                }
-                $response = $checkForXssInjection($cookieName, $cookieValue, 'cookie');
-                if ($response) {
-                    return $response;
+            // Check the full URL for SQL injection
+            $decodedUrl = urldecode($request->fullUrl());
+            $response = $checkForSqlInjection('url', $decodedUrl, 'url', [
+                '/\b(SELECT|UPDATE|SHOW|DELETE)\b/i',
+            ]);
+            if ($response) {
+                return $response;
+            }
+
+            // Check the full URL for LDAP injection
+            $response = $checkUrlForLdapInjection($decodedUrl);
+            if ($response) {
+                return $response;
+            }
+
+            // Check request inputs for SQL and XSS injection
+            // foreach ($request->all() as $key => $value) {
+            //     if (is_string($value)) {
+            //         $response = $checkForSqlInjection($key, $value, 'input');
+            //         if ($response) {
+            //             return $response;
+            //         }
+            //         $response = $checkForXssInjection($key, $value, 'input');
+            //         if ($response) {
+            //             return $response;
+            //         }
+            //     }
+            // }
+            // Check request headers for SQL and XSS injection
+            foreach ($request->headers->all() as $key => $values) {
+                foreach ($values as $value) {
+                    // Call the function to extract and clean the cookie value
+                    $value = $this->extractAndCleanCookieValue($value, $excludedCookiePattern);
+
+                    if (is_string($value)) {
+                        $response = $checkForSqlInjection($key, $value, 'header');
+                        if ($response) {
+                            return $response;
+                        }
+                        $response = $checkForXssInjection($key, $value, 'header');
+                        if ($response) {
+                            return $response;
+                        }
+                    }
                 }
             }
-        }
 
-        // Check X-XSRF-TOKEN cookie for dynamic session keys and extra characters
-        $xsrfToken = $request->cookie('XSRF-TOKEN');
-        if ($xsrfToken) {
-            $decodedXsrfToken = urldecode($xsrfToken); // Decode the token
-            if (! empty($decodedXsrfToken)) { // Check if the decoded token is not empty
-                $xsrfTokenParts = explode(';', $decodedXsrfToken);
-                foreach ($xsrfTokenParts as $part) {
-                    if (strpos($part, '=') !== false) {
-                        [$key, $sessionValue] = explode('=', $part, 2);
+            // Function to check headers for SQL injection, XSS, and special characters if header key is 'cookie'
+            foreach ($request->headers->all() as $key => $values) {
+                foreach ($values as $value) {
 
-                        // Avoid special characters in the session key and value
-                        if (preg_match($this->specialCharPattern, $key) || preg_match($this->specialCharPattern, $sessionValue)) {
-                            $logWarning('Potential harmful characters detected in session key or value within XSRF-TOKEN cookie', [
-                                'type' => 'cookie',
+                    // Call the function to extract and clean the cookie value
+                    $value = $this->extractAndCleanCookieValue($value, $excludedCookiePattern);
+
+                    if (is_string($value)) {
+                        // Check for special characters in 'cookie' headers
+                        if (stripos($key, 'cookie') !== false && preg_match($this->specialCharPatternCookie, $value)) {
+                            $logWarning('Potential harmful characters detected in header with cookie key', [
+                                'type' => 'header',
                                 'key' => $key,
-                                'value' => $sessionValue,
+                                'value' => $value,
                                 'ip' => $request->ip(),
                                 'url' => $request->fullUrl(),
                             ]);
@@ -325,13 +259,92 @@ class SqlQueryProtection
                             return response()->json(['error' => 'Suspicious activity detected'], 400);
                         }
 
-                        $response = $checkForSqlInjection($key, $sessionValue, 'cookie');
+                        // Check for special characters in 'x-xsrf-token' headers
+                        if (stripos($key, 'x-xsrf-token') !== false && preg_match($this->specialCharPattern, $value)) {
+                            $logWarning('Potential harmful characters detected in x-xsrf-token header', [
+                                'type' => 'header',
+                                'key' => $key,
+                                'value' => $value,
+                                'ip' => $request->ip(),
+                                'url' => $request->fullUrl(),
+                            ]);
+
+                            return response()->json(['error' => 'Suspicious activity detected'], 400);
+                        }
+
+                        // Check for SQL injection patterns in headers
+                        $response = $checkForSqlInjection($key, $value, 'header');
                         if ($response) {
                             return $response;
                         }
-                        $response = $checkForXssInjection($key, $sessionValue, 'cookie');
+
+                        // Check for XSS injection patterns in headers
+                        $response = $checkForXssInjection($key, $value, 'header');
                         if ($response) {
                             return $response;
+                        }
+                    }
+                }
+            }
+
+            // Check cookies for dynamic session keys
+            foreach ($request->cookies as $cookieName => $cookieValue) {
+                if (is_string($cookieValue)) {
+                    // Avoid special characters in cookies
+                    if (preg_match($this->specialCharPattern, $cookieValue)) {
+                        $logWarning('Potential harmful characters detected in cookie', [
+                            'type' => 'cookie',
+                            'key' => $cookieName,
+                            'value' => $cookieValue,
+                            'ip' => $request->ip(),
+                            'url' => $request->fullUrl(),
+                        ]);
+
+                        return response()->json(['error' => 'Suspicious activity detected'], 400);
+                    }
+
+                    $response = $checkForSqlInjection($cookieName, $cookieValue, 'cookie');
+                    if ($response) {
+                        return $response;
+                    }
+                    $response = $checkForXssInjection($cookieName, $cookieValue, 'cookie');
+                    if ($response) {
+                        return $response;
+                    }
+                }
+            }
+
+            // Check X-XSRF-TOKEN cookie for dynamic session keys and extra characters
+            $xsrfToken = $request->cookie('XSRF-TOKEN');
+            if ($xsrfToken) {
+                $decodedXsrfToken = urldecode($xsrfToken); // Decode the token
+                if (! empty($decodedXsrfToken)) { // Check if the decoded token is not empty
+                    $xsrfTokenParts = explode(';', $decodedXsrfToken);
+                    foreach ($xsrfTokenParts as $part) {
+                        if (strpos($part, '=') !== false) {
+                            [$key, $sessionValue] = explode('=', $part, 2);
+
+                            // Avoid special characters in the session key and value
+                            if (preg_match($this->specialCharPattern, $key) || preg_match($this->specialCharPattern, $sessionValue)) {
+                                $logWarning('Potential harmful characters detected in session key or value within XSRF-TOKEN cookie', [
+                                    'type' => 'cookie',
+                                    'key' => $key,
+                                    'value' => $sessionValue,
+                                    'ip' => $request->ip(),
+                                    'url' => $request->fullUrl(),
+                                ]);
+
+                                return response()->json(['error' => 'Suspicious activity detected'], 400);
+                            }
+
+                            $response = $checkForSqlInjection($key, $sessionValue, 'cookie');
+                            if ($response) {
+                                return $response;
+                            }
+                            $response = $checkForXssInjection($key, $sessionValue, 'cookie');
+                            if ($response) {
+                                return $response;
+                            }
                         }
                     }
                 }
