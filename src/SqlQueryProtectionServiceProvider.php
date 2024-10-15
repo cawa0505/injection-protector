@@ -14,7 +14,8 @@ class SqlQueryProtectionServiceProvider extends ServiceProvider
         $this->commands([
             SqlProtectionCommand::class
         ]);
-    
+
+        
         // Register services, merge configurations
         $this->mergeConfigFrom(__DIR__.'/../config/sqlqueryprotection.php', 'sqlqueryprotection');
     }
