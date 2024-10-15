@@ -3,7 +3,7 @@
         'name' => 'protect/sql-query-protection',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'c7e7f98355d6e6e621b19144bace424a286f8352',
+        'reference' => '157d27241959c73ab8c6497b24f8a20a793d0b2e',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -175,7 +175,7 @@
         'protect/sql-query-protection' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'c7e7f98355d6e6e621b19144bace424a286f8352',
+            'reference' => '157d27241959c73ab8c6497b24f8a20a793d0b2e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
