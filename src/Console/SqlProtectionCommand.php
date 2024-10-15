@@ -4,12 +4,11 @@ namespace SqlQueryProtection\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
-use SqlQueryProtection\Middleware\SqlQueryProtection;
 
 class SqlProtectionCommand extends Command
 {
     protected $signature = 'sqlprotection:scan';
-    protected $description = 'Scan for SQL and LDAP injection vulnerabilities in route parameters and URIs';
+    protected $description = 'Scan for SQL and LDAP injection vulnerabilities in all routes';
 
     protected $sqlPatterns = [
         '/\b(SELECT|UNION|INSERT|UPDATE|DELETE|DROP|TRUNCATE|CREATE|ALTER|RENAME|DESCRIBE|SHOW|EXEC|DECLARE|CAST|CONVERT|USE|GRANT|REVOKE|COMMIT|ROLLBACK|SAVEPOINT|RELEASE|LOCK|UNLOCK|PREPARE|EXECUTE|DEALLOCATE|SET|SLEEP|BENCHMARK|PG_SLEEP|WAITFOR)\b/i',
@@ -45,24 +44,18 @@ class SqlProtectionCommand extends Command
 
         // Check each route for SQL and LDAP injection vulnerabilities
         foreach ($routes as $route) {
-            $action = $route->getAction();
-            $middleware = $action['middleware'] ?? [];
+            $this->info('Checking route: ' . $route->uri);
 
-            // Check if the SQL injection protection middleware is applied
-            if (in_array(SqlQueryProtection::class, (array) $middleware)) {
-                $this->info('Checking route: ' . $route->uri);
+            // Check URI for vulnerabilities
+            if ($this->isVulnerable($route->uri, $this->sqlPatterns) || $this->isVulnerable($route->uri, $this->ldapPatterns)) {
+                $vulnerableRoutes[] = 'Vulnerable URI: ' . $route->uri;
+            }
 
-                // Check URI for vulnerabilities
-                if ($this->isVulnerable($route->uri, $this->sqlPatterns) || $this->isVulnerable($route->uri, $this->ldapPatterns)) {
-                    $vulnerableRoutes[] = 'Vulnerable URI: ' . $route->uri;
-                }
-
-                // Check request parameters for vulnerabilities
-                $requestParameters = $this->getRequestParametersForRoute($route);
-                foreach ($requestParameters as $key => $value) {
-                    if ($this->isVulnerable($value, $this->sqlPatterns) || $this->isVulnerable($value, $this->ldapPatterns)) {
-                        $vulnerableRoutes[] = 'Vulnerable parameter in ' . $route->uri . ': ' . $key . ' = ' . $value;
-                    }
+            // Check request parameters for vulnerabilities
+            $requestParameters = $this->getRequestParametersForRoute($route);
+            foreach ($requestParameters as $key => $value) {
+                if ($this->isVulnerable($value, $this->sqlPatterns) || $this->isVulnerable($value, $this->ldapPatterns)) {
+                    $vulnerableRoutes[] = 'Vulnerable parameter in ' . $route->uri . ': ' . $key . ' = ' . $value;
                 }
             }
         }
