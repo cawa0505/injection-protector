@@ -3,7 +3,7 @@
 namespace SqlQueryProtection;
 
 use Illuminate\Support\ServiceProvider;
-use SqlQueryProtection\Console\SqlProtectionCommand;
+use YourVendor\SqlQueryProtection\Console\SqlProtectionCommand;
 
 class SqlQueryProtectionServiceProvider extends ServiceProvider
 {
