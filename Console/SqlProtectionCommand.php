@@ -1,6 +1,6 @@
 <?php
 
-namespace Console;
+namespace SqlQueryProtection\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;

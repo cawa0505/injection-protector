@@ -2,9 +2,8 @@
 
 namespace SqlQueryProtection;
 
-use Console\SqlProtectionCommand;
 use Illuminate\Support\ServiceProvider;
-
+use SqlQueryProtection\Console\SqlProtectionCommand;
 
 class SqlQueryProtectionServiceProvider extends ServiceProvider
 {
@@ -12,7 +11,7 @@ class SqlQueryProtectionServiceProvider extends ServiceProvider
     {
         // Register the command with Artisan
         $this->commands([
-            SqlProtectionCommand::class,
+            SqlProtectionCommand::class
         ]);
 
         // Register services, merge configurations
