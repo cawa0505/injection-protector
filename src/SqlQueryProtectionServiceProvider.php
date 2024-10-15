@@ -10,7 +10,6 @@ class SqlQueryProtectionServiceProvider extends ServiceProvider
 {
     public function register()
     {
-
         // Register the command with Artisan
         $this->commands([
             SqlProtectionCommand::class,
