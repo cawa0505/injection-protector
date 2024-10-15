@@ -3,11 +3,18 @@
 namespace SqlQueryProtection;
 
 use Illuminate\Support\ServiceProvider;
+use SqlQueryProtection\Console\SqlProtectionCommand;
 
 class SqlQueryProtectionServiceProvider extends ServiceProvider
 {
     public function register()
     {
+
+        // Register the command with Artisan
+        $this->commands([
+            SqlProtectionCommand::class,
+        ]);
+
         // Register services, merge configurations
         $this->mergeConfigFrom(__DIR__.'/../config/sqlqueryprotection.php', 'sqlqueryprotection');
     }
