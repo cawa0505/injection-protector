@@ -23,7 +23,7 @@ class SqlQueryProtection
     public function handle(Request $request, Closure $next): Response
     {
 
-        $config = config('sqlqueryprotection'); // Access the config file.
+        $config = config('sqlqueryprotection'); // Access the config file..
 
         // Check if New Relic is available
         $useNewRelic = extension_loaded('newrelic');

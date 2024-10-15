@@ -82,6 +82,7 @@ class SqlProtectionCommand extends Command
         return false; // No vulnerabilities found
     }
 
+    
     // Method to get simulated request parameters for a given route
     protected function getRequestParametersForRoute($route)
     {
